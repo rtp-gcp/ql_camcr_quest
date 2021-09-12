@@ -109,13 +109,63 @@ EOF
 
 ### Solution
 
-gcloud compute instances create www1 \
-  --image-family debian-9 \
-  --image-project debian-cloud \
-  --zone us-central1-a \
-  --tags network-lb-tag \
-  --metadata startup-script="#! /bin/bash
-    sudo apt-get update
-    sudo apt-get install apache2 -y
-    sudo service apache2 restart
-    echo '<!doctype html><html><body><h1>www1</h1></body></html>' | tee /var/www/html/index.html"
+
+```
+gcloud compute instance-templates create lb-backend-template \
+   --region=us-central1 \
+   --network=default \
+   --subnet=default \
+   --tags=allow-health-check \
+   --image-family=debian-9 \
+   --image-project=debian-cloud \
+   --metadata=startup-script=' #! /bin/bash
+    apt-get update
+    apt-get install -y nginx
+    service nginx start
+    sed -i -- 's/nginx/Google Cloud Platform - '"\$HOSTNAME"'/' /var/www/html/index.nginx-debian.html
+
+
+gcloud compute instance-groups managed create lb-backend-group \
+   --template=lb-backend-template --size=2 --zone=us-central1-f
+
+gcloud compute firewall-rules create fw-allow-health-check \
+    --network=default \
+    --action=allow \
+    --direction=ingress \
+    --source-ranges=130.211.0.0/22,35.191.0.0/16 \
+    --target-tags=allow-health-check \
+    --rules=tcp:80
+
+gcloud compute addresses create lb-ipv4-1 \
+    --ip-version=IPV4 \
+    --global
+
+gcloud compute health-checks create http http-basic-check  --port 80
+
+gcloud compute backend-services create web-backend-service \
+    --protocol=HTTP \
+    --port-name=http \
+    --health-checks=http-basic-check \
+    --global
+
+gcloud compute backend-services add-backend web-backend-service \
+    --instance-group=lb-backend-group \
+    --instance-group-zone=us-central1-f \
+    --global
+
+gcloud compute url-maps create web-map-http \
+    --default-service web-backend-service
+
+gcloud compute target-http-proxies create http-lb-proxy \
+    --url-map web-map-http
+
+gcloud compute forwarding-rules create http-content-rule \
+    --address=lb-ipv4-1\
+    --global \
+    --target-http-proxy=http-lb-proxy \
+    --ports=80
+
+```
+
+
+
