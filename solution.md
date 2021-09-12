@@ -17,6 +17,11 @@
 
 ## Task 3: Set up an HTTP load balancer
 
+Serve site via nginx web servers
+Ensure site is fault-tolerant
+
+Create an HTTP load balancer of two nginx web servers
+
 given:
 
 ```
