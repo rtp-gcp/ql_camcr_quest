@@ -12,6 +12,9 @@
 
 #### create the VM
 ```
+
+gcloud config set compute/zone us-central1-f
+
 gcloud compute instances create nucleus-jumphost  \
              --machinte-type=f1-micro \
              firewall-rules create default-allow-http --direction=INGRESS \
@@ -48,7 +51,33 @@ verify the external IP has a webpage which shows "Welcome to nginx!"
  * Use docker container hello-app `gcr.io/google-samples/hello-app:2.0
  * expose the app on port 8080
 
+
+#### create  cluster
+
+```
+gcloud config set compute/zone us-east1-b
+gcloud container clusters create nucleus-cube
+gcloud container clusters get-credentials nucleus-cube
+```
+
+#### deploy  cluster
+kubectl create deployment hello-app \
+--image=gcr.io/google-samples/hello-app:2.0
+
+kubectl expose deployment hello-app \
+--type=LoadBalancer --port 8080
+
+Test the cluster with
+
+* `kubectl get service`
+* get external ip
+* open web browser to http://externalip:8080
+
+
+
 ## Task 3: Set up an HTTP load balancer
+
+### Objective
 
 Serve site via nginx web servers
 Ensure site is fault-tolerant
@@ -77,3 +106,16 @@ EOF
 * Create a URL map, and target the HTTP proxy to route requests to your URL map.
 * Create a forwarding rule.
 
+
+### Solution
+
+gcloud compute instances create www1 \
+  --image-family debian-9 \
+  --image-project debian-cloud \
+  --zone us-central1-a \
+  --tags network-lb-tag \
+  --metadata startup-script="#! /bin/bash
+    sudo apt-get update
+    sudo apt-get install apache2 -y
+    sudo service apache2 restart
+    echo '<!doctype html><html><body><h1>www1</h1></body></html>' | tee /var/www/html/index.html"
