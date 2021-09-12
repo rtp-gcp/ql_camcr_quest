@@ -8,6 +8,9 @@
  * Use default image type
 
 
+### Solution
+
+#### create the VM
 ```
 gcloud compute instances create nucleus-jumphost  \
              --machinte-type=f1-micro \
@@ -26,6 +29,16 @@ gcloud compute --project=a-test-project-320414  \
  --target-tags=http-server
 
 ```
+
+#### Install nginx
+
+```
+apt-get update
+apt-get install nginx -y
+gcloud compute instances list
+```
+
+verify the external IP has a webpage which shows "Welcome to nginx!"
 
 
 ## Task 2: Create a Kubernetes service cluster
