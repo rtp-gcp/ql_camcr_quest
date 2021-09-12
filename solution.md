@@ -8,6 +8,26 @@
  * Use default image type
 
 
+```
+gcloud compute instances create nucleus-jumphost  \
+             --machinte-type=f1-micro \
+             firewall-rules create default-allow-http --direction=INGRESS \
+             --priority=1000 --network=default --action=ALLOW \
+             --rules=tcp:80 --source-ranges=0.0.0.0/0 \
+             --target-tags=http-server \
+             --zone=us-central1-f
+
+vs
+
+gcloud compute --project=a-test-project-320414  \
+ firewall-rules create default-allow-http \
+ --direction=INGRESS --priority=1000 --network=default \
+ --action=ALLOW --rules=tcp:80 --source-ranges=0.0.0.0/0  \
+ --target-tags=http-server
+
+```
+
+
 ## Task 2: Create a Kubernetes service cluster
 
 ### Objective
