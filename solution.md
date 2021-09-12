@@ -19,7 +19,7 @@ gcloud compute instances create nucleus-jumphost  \
              --machine-type=f1-micro \
              --zone=us-east1-b
 
-gcloud compute --project=qwiklabs-gcp-01-7e8328486ea5 \
+gcloud compute --project=qwiklabs-gcp-04-8e8061eb9cae \
              firewall-rules create default-allow-http --direction=INGRESS \
              --priority=1000 --network=default --action=ALLOW \
              --rules=tcp:80 --source-ranges=0.0.0.0/0 \
@@ -33,17 +33,6 @@ gcloud compute --project=a-test-project-320414  \
  --action=ALLOW --rules=tcp:80 --source-ranges=0.0.0.0/0  \
  --target-tags=http-server
 
-```
-
-#### TODO: Unnecessary Install nginx
-
-```
-apt-get update
-apt-get install nginx -y
-gcloud compute instances list
-```
-
-verify the external IP has a webpage which shows "Welcome to nginx!"
 
 
 ## Task 2: Create a Kubernetes service cluster
@@ -64,11 +53,13 @@ gcloud container clusters get-credentials nucleus-cube
 
 #### deploy  cluster
 ```
-kubectl create deployment hello-app \
---image=gcr.io/google-samples/hello-app:2.0
+kubectl create deployment hello-app  --image=gcr.io/google-samples/hello-app:2.0
 
-kubectl expose deployment hello-app \
---type=LoadBalancer --port 8080
+kubectl expose deployment hello-app --type=LoadBalancer --port 80 --target-port 8080
+
+vs
+
+kubectl expose deployment hello-app --type=LoadBalancer --port 8080
 ```
 
 Test the cluster with
@@ -101,6 +92,12 @@ EOF
 ```
 
 
+
+
+
+
+
+
 * Create an instance template.
 * Create a target pool.
 * Create a managed instance group.
@@ -115,61 +112,108 @@ EOF
 
 
 ```
-gcloud compute instance-templates create lb-backend-template \
+Create the startup.sh as given
+chmod +x startup.sh
+
+
+
+
+#new          --machine-type g1-small \
+
+
+
+gcloud compute instance-templates create web-server-template \
    --region=us-east1 \
-   --network=default \
-   --subnet=default \
-   --tags=allow-health-check \
-   --image-family=debian-9 \
-   --image-project=debian-cloud \
-   --metadata=startup-script=' #! /bin/bash
-    apt-get update
-    apt-get install -y nginx
-    service nginx start
-    sed -i -- 's/nginx/Google Cloud Platform - '"\$HOSTNAME"'/' /var/www/html/index.nginx-debian.html
+   --network=nucleus-vpc \
+   --machine-type g1-small \
+   --metadata-from-file startup-script=startup.sh
+#missing  --tags=allow-health-check \
+#missing   --image-family=debian-9 \
+#missing   --image-project=debian-cloud \
 
 
-gcloud compute instance-groups managed create lb-backend-group \
-   --template=lb-backend-template --size=2 --zone=us-east1-b
+gcloud compute instance-groups managed create web-server-group \
+          --base-instance-name web-server \
+   --template=web-server-template --size=2 --region=us-east1
 
-gcloud compute firewall-rules create fw-allow-health-check \
-    --network=default \
-    --action=allow \
-    --direction=ingress \
-    --source-ranges=130.211.0.0/22,35.191.0.0/16 \
-    --target-tags=allow-health-check \
-    --rules=tcp:80
+new
+gcloud compute firewall-rules create web-server-firewall \
+          --allow tcp:80 \
+          --network nucleus-vpc
 
-gcloud compute addresses create lb-ipv4-1 \
-    --ip-version=IPV4 \
-    --global
+#gcloud compute firewall-rules create fw-allow-health-check \
+#    --network=default \
+#    --action=allow \
+#    --direction=ingress \
+#    --source-ranges=130.211.0.0/22,35.191.0.0/16 \
+#    --target-tags=allow-health-check \
+#    --rules=tcp:80
 
-gcloud compute health-checks create http http-basic-check  --port 80
+#gcloud compute addresses create lb-ipv4-1 \
+#    --ip-version=IPV4 \
+#    --global
 
-gcloud compute backend-services create web-backend-service \
+gcloud compute http-health-checks create http-basic-check
+
+
+
+gcloud compute backend-services create web-server-backend \
     --protocol=HTTP \
-    --port-name=http \
-    --health-checks=http-basic-check \
+    --http-health-checks=http-basic-check \
     --global
+
+
+gcloud compute instance-groups managed \
+          set-named-ports web-server-group \
+          --named-ports http:80 \
+          --region us-east1
+
+
 
 gcloud compute backend-services add-backend web-backend-service \
-    --instance-group=lb-backend-group \
-    --instance-group-zone=us-east1-b \
+    --instance-group=web-server-group \
+    --instance-group-region=us-east1 \
     --global
 
-gcloud compute url-maps create web-map-http \
-    --default-service web-backend-service
 
-gcloud compute target-http-proxies create http-lb-proxy \
-    --url-map web-map-http
+
+
+
+gcloud compute url-maps create web-map-http  --default-service web-server-backend
+
+
+
+gcloud compute target-http-proxies create http-lb-proxy  --url-map web-map-http
+
+
 
 gcloud compute forwarding-rules create http-content-rule \
-    --address=lb-ipv4-1\
     --global \
     --target-http-proxy=http-lb-proxy \
     --ports=80
 
+gcloud compute forwarding-rules list
 ```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
