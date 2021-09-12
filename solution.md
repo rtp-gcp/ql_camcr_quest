@@ -13,15 +13,17 @@
 #### create the VM
 ```
 
-gcloud config set compute/zone us-central1-f
+gcloud config set compute/zone us-east1-b
 
 gcloud compute instances create nucleus-jumphost  \
-             --machinte-type=f1-micro \
+             --machine-type=f1-micro \
+             --zone=us-east1-b
+
+gcloud compute --project=qwiklabs-gcp-01-7e8328486ea5 \
              firewall-rules create default-allow-http --direction=INGRESS \
              --priority=1000 --network=default --action=ALLOW \
              --rules=tcp:80 --source-ranges=0.0.0.0/0 \
-             --target-tags=http-server \
-             --zone=us-central1-f
+             --target-tags=http-server 
 
 vs
 
@@ -33,7 +35,7 @@ gcloud compute --project=a-test-project-320414  \
 
 ```
 
-#### Install nginx
+#### TODO: Unnecessary Install nginx
 
 ```
 apt-get update
@@ -61,11 +63,13 @@ gcloud container clusters get-credentials nucleus-cube
 ```
 
 #### deploy  cluster
+```
 kubectl create deployment hello-app \
 --image=gcr.io/google-samples/hello-app:2.0
 
 kubectl expose deployment hello-app \
 --type=LoadBalancer --port 8080
+```
 
 Test the cluster with
 
@@ -112,7 +116,7 @@ EOF
 
 ```
 gcloud compute instance-templates create lb-backend-template \
-   --region=us-central1 \
+   --region=us-east1 \
    --network=default \
    --subnet=default \
    --tags=allow-health-check \
@@ -126,7 +130,7 @@ gcloud compute instance-templates create lb-backend-template \
 
 
 gcloud compute instance-groups managed create lb-backend-group \
-   --template=lb-backend-template --size=2 --zone=us-central1-f
+   --template=lb-backend-template --size=2 --zone=us-east1-b
 
 gcloud compute firewall-rules create fw-allow-health-check \
     --network=default \
@@ -150,7 +154,7 @@ gcloud compute backend-services create web-backend-service \
 
 gcloud compute backend-services add-backend web-backend-service \
     --instance-group=lb-backend-group \
-    --instance-group-zone=us-central1-f \
+    --instance-group-zone=us-east1-b \
     --global
 
 gcloud compute url-maps create web-map-http \
