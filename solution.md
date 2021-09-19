@@ -11,8 +11,8 @@
 ### Solution
 
 #### create the VM
-```
 
+```
 gcloud config set compute/zone us-east1-b
 
 gcloud compute instances create nucleus-jumphost  \
@@ -32,6 +32,42 @@ gcloud compute --project=a-test-project-320414  \
  --direction=INGRESS --priority=1000 --network=default \
  --action=ALLOW --rules=tcp:80 --source-ranges=0.0.0.0/0  \
  --target-tags=http-server
+ ```
+
+### cli solution
+
+```
+$ gcloud init
+$ gcloud config list
+```
+
+Did not specify zone but it uses default zone in config.
+
+```
+$ gcloud compute instances create nucleus-jumphost --machine-type=f1-micro 
+```
+
+Verify compute instance creation
+
+```
+$ gcloud compute instances list
+```
+
+Note we received credit for the jump host checkpoint without specifying the firewall.
+
+
+
+### Common Errors
+
+* create jumphost with correct machine type.   Occurs when nothing is done
+
+
+
+
+
+
+
+
 
 
 
@@ -68,6 +104,18 @@ Test the cluster with
 * get external ip
 * open web browser to http://externalip:8080
 
+### cli solution
+
+
+```
+$ gcloud container clusters create nucleus-cluster --num-nodes 1
+$ gcloud container clusters get-credentials nucleus-cluster
+```
+
+
+### Common Errors
+
+* Please create kubernetes cluster occurs when checkpoint is attempted without anything done.
 
 
 ## Task 3: Set up an HTTP load balancer
