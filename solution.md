@@ -112,10 +112,15 @@ $ gcloud container clusters create nucleus-cluster --num-nodes 1
 $ gcloud container clusters get-credentials nucleus-cluster
 ```
 
+```
+$ ls -al .kube/ 
+shows the config credentials
+```
 
 ### Common Errors
 
 * Please create kubernetes cluster occurs when checkpoint is attempted without anything done.
+* Please expose service.  Occurs when get credentials not performed.
 
 
 ## Task 3: Set up an HTTP load balancer
