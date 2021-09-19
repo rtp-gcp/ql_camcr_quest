@@ -117,10 +117,33 @@ $ ls -al .kube/
 shows the config credentials
 ```
 
+Deploy app to cluster and a generic tcp/ip load balancer for cluster
+```
+$ kubectl create deployment hello-server  --image=gcr.io/google-samples/hello-app:2.0
+$ kubectl expose deployment hello-app --type=LoadBalancer --port 8080
+```
+
+```
+$ kubectl get svc 
+```
+
+Use the external ip to view the hello-server webapp.  Make sure you specify port 8080. It sould be visible.
+
+
+
 ### Common Errors
 
 * Please create kubernetes cluster occurs when checkpoint is attempted without anything done.
 * Please expose service.  Occurs when get credentials not performed.
+
+
+
+
+
+
+
+
+
 
 
 ## Task 3: Set up an HTTP load balancer
@@ -250,10 +273,123 @@ gcloud compute forwarding-rules list
 
 
 
+### cli solution
+Make the startup.sh file using the given
+
+
+```
+cat << EOF > startup.sh
+#! /bin/bash
+apt-get update
+apt-get install -y nginx
+service nginx start
+sed -i -- 's/nginx/Google Cloud Platform - '"\$HOSTNAME"'/' /var/www/html/index.nginx-debian.html
+EOF
+```
+
+Even though the instructions specify f1-micro in generic instructions (at top of lab) we must use `g1-small`.  
+Also note we are using default network - vpc.
+
+```
+gcloud compute instance-templates create web-server-template \
+   --metadata-from-file startup-script=startup.sh
+   --machine-type g1-small 
+```
+
+```
+gcloud compute target-pools create nucleus-pool
+```
+
+```
+gcloud compute instance-groups managed create web-svr-grp \
+ --base-instance-name nucleus-svr \
+ --size 2 \
+ --template web-server-template \
+ --target-pool nucleus-pool
+```
+
+```
+gcloud compute instances list
+```
+
+The two web servers have a name prefix of web-svr-grp-.
+
+The webservers are not visible yet, because we don't have firewall access yet.
+
+```
+$ gcloud compute firewall-rules create www-firewall --allow tcp:80 
+```
+
+This will show the webserver web page on one of the instnaces.  It is the default page.
+
+```
+$ gcloud compute forwarding-rules create www-lb \
+    --region us-east1 \
+    --ports=80 \
+    --target-pool nucleus-pool 
+```
+
+```
+$ gcloud compute http-health-checks create http-basic-check
+```
+
+In case a variable sneaks end.  Here is the variable definitions:
+```
+template="web-server-template"
+mtype="g1-small"
+tpool="nucleus-pool"
+instance_grp="web-svr-grp"
+```
+
+
+```
+gcloud compute instance-groups managed set-named-ports web-svr-grp --named-ports http:80
+```
+
+```
+$ gcloud compute backend-services create web-backend \
+        --protocol HTTP \
+        --http-health-checks http-basic-check \
+        --global
+```
+
+```
+$ gcloud compute backend-services add-backend web-backend \
+        --instance-group $instance_grp \
+        --instance-group-zone us-east1-b \
+        --global
+```
+
+```
+$ gcloud compute url-maps create web-map-http  --default-service web-backend
+```
+
+```
+$ gcloud compute target-http-proxies create http-lb-proxy  --url-map web-map-http
+```
+
+
+```
+$ gcloud compute forwarding-rules create http-content-rule \
+        --global \
+        --target-http-proxy http-lb-proxy \
+        --ports 80
+
+```
 
 
 
 
+
+
+
+### Common Errors
+
+* Create the managed instance group with 2 nodes - initial error when nothing done.  Also when firewall is not yet
+
+* Create the global forwarding rule using the HTTP trager proxy.  Occurs when forwarding rule not issued.
+
+specified.
 
 
 
