@@ -119,7 +119,7 @@ shows the config credentials
 
 Deploy app to cluster and a generic tcp/ip load balancer for cluster
 ```
-$ kubectl create deployment hello-server  --image=gcr.io/google-samples/hello-app:2.0
+$ kubectl create deployment hello-app  --image=gcr.io/google-samples/hello-app:2.0
 $ kubectl expose deployment hello-app --type=LoadBalancer --port 8080
 ```
 
@@ -355,7 +355,7 @@ $ gcloud compute backend-services create web-backend \
 
 ```
 $ gcloud compute backend-services add-backend web-backend \
-        --instance-group $instance_grp \
+        --instance-group web-svr-grp \
         --instance-group-zone us-east1-b \
         --global
 ```
