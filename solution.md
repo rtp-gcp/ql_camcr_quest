@@ -1,4 +1,5 @@
-# ql_camcr_quest
+# Qwiklabs: Create and Manage Cloud Resources: Challenge Lab (GCP313)
+
 
 ## Task 1: Create a project jumphost instance
 
@@ -61,7 +62,7 @@ Note we received credit for the jump host checkpoint without specifying the fire
 
 * create jumphost with correct machine type.   Occurs when nothing is done
 
-### Screen Output
+### Screenshot task 1
 
 ![image](https://user-images.githubusercontent.com/14955223/138380772-cdb7a2ee-aa46-4b41-84a2-ee81d58ab931.png)
 
@@ -139,12 +140,8 @@ Use the external ip to view the hello-server webapp.  Make sure you specify port
 * Please expose service.  Occurs when get credentials not performed.
 
 
-
-
-
-
-
-
+### Screenshot Task2
+![image](https://user-images.githubusercontent.com/14955223/138381648-057ac847-0198-452a-b19a-8adc657306db.png)
 
 
 
