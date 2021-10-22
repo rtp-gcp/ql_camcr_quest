@@ -62,7 +62,7 @@ Note we received credit for the jump host checkpoint without specifying the fire
 
 * create jumphost with correct machine type.   Occurs when nothing is done
 
-### Screenshot task 1
+### Screenshot Task 1
 
 ![image](https://user-images.githubusercontent.com/14955223/138380772-cdb7a2ee-aa46-4b41-84a2-ee81d58ab931.png)
 
@@ -140,7 +140,7 @@ Use the external ip to view the hello-server webapp.  Make sure you specify port
 * Please expose service.  Occurs when get credentials not performed.
 
 
-### Screenshot Task2
+### Screenshot Task 2
 ![image](https://user-images.githubusercontent.com/14955223/138381648-057ac847-0198-452a-b19a-8adc657306db.png)
 
 
@@ -391,6 +391,8 @@ $ gcloud compute forwarding-rules create http-content-rule \
 specified.
 
 
+### Screenshot Task 3
+![image](https://user-images.githubusercontent.com/14955223/138382310-c6cb6da5-6233-47e4-b477-3535a5a23103.png)
 
 
 
