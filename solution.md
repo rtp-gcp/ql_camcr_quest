@@ -62,6 +62,7 @@ Note we received credit for the jump host checkpoint without specifying the fire
 * create jumphost with correct machine type.   Occurs when nothing is done
 
 
+![image](https://user-images.githubusercontent.com/14955223/138380772-cdb7a2ee-aa46-4b41-84a2-ee81d58ab931.png)
 
 
 
